@@ -1,23 +1,21 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-	-std=gnu++17 \
-	-Wall \
-	-Werror \
-	-ffunction-sections \
-	-fdata-sections \
-	-fno-rtti \
-	-fno-exceptions \
-	-fno-use-cxa-atexit \
-	-fno-unwind-tables \
-	-fno-asynchronous-unwind-tables \
-	-fno-threadsafe-statics \
-	--specs=nano.specs \
+-std=gnu++17 \
+-Wall \
+-Werror \
+-fno-rtti \
+-fno-exceptions \
+-fno-unwind-tables \
+-fno-asynchronous-unwind-tables \
+-fno-threadsafe-statics \
+-ffunction-sections \
+-fdata-sections \
 ")
 
 set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tm4c123gh6pm.ld")
 set(CMAKE_EXE_LINKER_FLAGS "\
-	-Wl,--gc-sections \
-	-Wl,-Map=main.map \
-	-Wl,-T ${LD_SCRIPT} \
+-Wl,-gc-sections \
+-Wl,-Map=main.map \
+-Wl,-T ${LD_SCRIPT} \
 ")
 
 find_package(TivaWare REQUIRED COMPONENTS driverlib QUIET)
@@ -41,5 +39,5 @@ add_custom_target(objdump
 
 # add 'objdump-full' target - makes objdump, but with full code listing
 add_custom_target(objdump-full
-	COMMAND arm-none-eabi-objdump -d -S -C example >objdump
+	COMMAND arm-none-eabi-objdump -D -x -s -t -r -S -C example >objdump
 	DEPENDS example)

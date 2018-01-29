@@ -7,45 +7,84 @@
 namespace tiva {
 namespace gpio {
 	
-template<size_t PinNumber, typename PortType>
-class UartPin
-	:	public HardwarePin<PinNumber, PortType>
+class IUARTPin
+	:	public IHardwarePin
 {
 public:
+
+protected:
+	IUARTPin(std::uint32_t baseAddress, std::uint8_t pinMask) noexcept;
+
+	~IUARTPin() noexcept = default;
+};
+
+inline
+IUARTPin::IUARTPin(std::uint32_t baseAddress, std::uint8_t pinMask) noexcept
+	:	IHardwarePin(baseAddress, pinMask)
+{
+	configurePad(PadStrength::_2milliamper, PadMode::PushPull);
+	GPIOPinConfigure(GPIO_PE4_U5RX); // TODO: get alternate function
+}
+
+
+template<size_t PinNumber, typename PortType>
+class UARTPin
+	:	public HardwarePin<PinNumber, PortType>,
+		public IUARTPin
+{
+public:
+
+protected:
 	using HardwarePinType = HardwarePin<PinNumber, PortType>;
 
-	constexpr explicit UartPin(PortType& port)
-		:	HardwarePinType::HardwarePin(port)
-	{
-		configureAsUart();
-	}
+	explicit UARTPin(PortType& port) noexcept;
 
-private:
-	void configureAsUart()
-	{
-		GPIOPinTypeUART(PortType::BaseAddress, 
-			HardwarePinType::PinType::PinMask);
-		GPIOPinConfigure(GPIO_PE4_U5RX); // at the moment only
-	}
+	~UARTPin() noexcept = default;
 };
 
 template<size_t PinNumber, typename PortType>
-class RxUartPin
-	:	public UartPin<PinNumber, PortType>
+inline
+UARTPin<PinNumber, PortType>::UARTPin(PortType& port)
+	:	HardwarePinType::HardwarePin(port),
+		IUARTPin(PortType::BaseAddress, 
+			HardwarePinType::PinType::PinMask)
+{}
+
+template<size_t PinNumber, typename PortType>
+class RxUARTPin
+	:	public UARTPin<PinNumber, PortType>
 {
 public:
-	using UartPinType = UartPin<PinNumber, PortType>;
-	using UartPinType::UartPin;
+	using UARTPinType = UARTPin<PinNumber, PortType>;
+
+	explicit RxUARTPin(PortType& port) noexcept;
+
+	~RxUARTPin() noexcept = default;
 };
 
 template<size_t PinNumber, typename PortType>
-class TxUartPin
-	:	public UartPin<PinNumber, PortType>
+inline
+RxUARTPin<PinNumber, PortType>::RxUARTPin(PortType& port) noexcept
+	:	UARTPinType::UARTPin(port)
+{}
+
+template<size_t PinNumber, typename PortType>
+class TxUARTPin
+	:	public UARTPin<PinNumber, PortType>
 {
 public:
-	using UartPinType = UartPin<PinNumber, PortType>;
-	using UartPinType::UartPin;
+	using UARTPinType = UARTPin<PinNumber, PortType>;
+
+	explicit TxUARTPin(PortType& port) noexcept;
+
+	~TxUARTPin() noexcept = default;
 };
+
+template<size_t PinNumber, typename PortType>
+inline
+TxUARTPin<PinNumber, PortType>::TxUARTPin(PortType& port) noexcept
+	:	UARTPinType::UARTPin(port)
+{}
 
 } // namespace gpio
 } // namespace tiva

@@ -4,6 +4,8 @@
  * Author: akowalew
  */
 
+#include <stdint.h>
+
 extern "C" {
 
 // Forward declaration of the default fault handlers.
@@ -16,14 +18,14 @@ void defaultISR(void);
 int main();
 
 // initial value of stack pointer 
-extern unsigned long __stack;
+extern unsigned long _stack;
 
 // this will be the first byte of flash - contains initial stack pointer
 __attribute__((section(".stack_start_value"),used))
-const unsigned long stackBegin = (unsigned long)&__stack; 
+const unsigned long stackBegin = (unsigned long)&_stack; 
 
 // The vector table.
-__attribute__((section(".isr_vector"),used))
+__attribute__((section(".vectors"),used))
 void (* const g_pfnVectors[])(void) =
 {
     resetISR,                        // The reset handler
@@ -182,6 +184,12 @@ void (* const g_pfnVectors[])(void) =
     defaultISR                       // PWM 1 Fault
 };
 
+
+// void _exit(int)
+// {
+//     while(1);
+// }
+
 /**
  * @brief Reset interrupt service routine
  * @details It will be called after hardware reset.
@@ -191,25 +199,43 @@ void
 resetISR(void)
 {
     // Copy the data segment initializers from flash to SRAM.
-    extern unsigned long _end_text;
-    extern unsigned long _start_data;
-    extern unsigned long _end_data;
-    auto idata = &_end_text;
-    auto data = &_start_data;
-    const auto edata = &_end_data;
+    extern unsigned long _etext;
+    extern unsigned long _data_start;
+    extern unsigned long _data_end;
+    auto idata = &_etext;
+    auto data = &_data_start;
+    const auto edata = &_data_end;
     while(data < edata)
     {
         *(data++) = *(idata++);
     }
 
     // Zero fill the bss segment.
-    extern unsigned long _start_bss;
-    extern unsigned long _end_bss;
-    auto bss = &_start_bss;
-    const auto ebss = &_end_bss;
+    extern unsigned long _bss_start;
+    extern unsigned long _bss_end;
+    auto bss = &_bss_start;
+    const auto ebss = &_bss_end;
     while(bss < ebss)
     {
         *(bss++) = 0;
+    }
+
+    // run pre init functions
+    extern void (*_preinit_array_start[]) (void) __attribute__((weak));
+    extern void (*_preinit_array_end[]) (void) __attribute__((weak));
+    int preinitCount = _preinit_array_end - _preinit_array_start;
+    for (int i = 0; i < preinitCount; i++)
+    {
+        _preinit_array_start[i] ();
+    }
+
+    // run init functions (e.g. static constructors)
+    extern void (*_init_array_start[]) (void) __attribute__((weak));
+    extern void (*_init_array_end[]) (void) __attribute__((weak));
+    int initCount = _init_array_start - _init_array_end;
+    for (int i = 0; i < initCount; i++)
+    {
+        _init_array_start[i] ();
     }
 
     // Call the application's entry point.

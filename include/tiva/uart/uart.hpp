@@ -15,15 +15,12 @@ namespace uart {
 	
 class IUart
 {
-protected:
-	constexpr IUart(uint32_t baseAddress) noexcept
-		:	_baseAddress(baseAddress)
-	{}
-
-	void enable() noexcept
-	{
-		UARTEnable(_baseAddress);
-	}
+public:
+	IUart(const IUart& other) noexcept = delete;
+	IUart& operator=(const IUart& other) noexcept = delete;
+	
+	IUart(IUart&&) noexcept = delete;
+	IUart& operator=(IUart&& other) noexcept = delete;
 
 	void configure(int clk, int baudRate, DataSize dataSize,
 		StopBits stopBits, Parity parity) noexcept
@@ -33,6 +30,28 @@ protected:
 			| static_cast<uint32_t>(parity);
 		UARTConfigSetExpClk(_baseAddress, clk, 
 			baudRate, config);
+	}
+
+protected:
+	IUart(uint32_t baseAddress) noexcept
+		:	_baseAddress(baseAddress)
+	{
+		enable();
+	}
+
+	~IUart() noexcept
+	{
+		disable();
+	}
+
+	void enable() noexcept
+	{
+		UARTEnable(_baseAddress);
+	}
+
+	void disable() noexcept
+	{
+		UARTDisable(_baseAddress);
 	}
 
 private:
@@ -53,7 +72,6 @@ public:
 	{
 		static_cast<void>(rxPin);
 		static_cast<void>(txPin);
-		systemControl.enablePeripheral(*this);
 	}
 };
 

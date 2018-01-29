@@ -32,16 +32,14 @@ private:
 	{
 		ROM_SysCtlPeripheralEnable(_id);
 		while(!ROM_SysCtlPeripheralReady(_id))
-		{
-		}
+		{}
 	}	
 
 	void disablePeripheral()
 	{
 		ROM_SysCtlPeripheralDisable(_id);
 		while(ROM_SysCtlPeripheralReady(_id))
-		{
-		}
+		{}
 	}
 
 	const std::uint32_t _id;
