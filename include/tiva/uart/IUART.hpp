@@ -7,6 +7,8 @@
 #include "tiva/uart/Parity.hpp"
 
 #include <cstdio>
+#include "inc/hw_uart.h"
+#include "inc/hw_types.h"
 #include "driverlib/uart.h"
 #include "driverlib/sysctl.h"
 
@@ -20,14 +22,14 @@ public:
 	void configure(int clk, int baudRate, WordLength wordLength,
 		StopBits stopBits, Parity parity) noexcept;
 
+	void enable() noexcept;
+
+	void disable() noexcept;
+
 protected:
 	IUART(std::uint32_t peripheralId, std::uint32_t baseAddress) noexcept;
 
 	~IUART() noexcept;
-
-	void enable() noexcept;
-
-	void disable() noexcept;
 
 private:
 	const std::uint32_t _baseAddress;
@@ -61,13 +63,13 @@ IUART::~IUART() noexcept
 inline void
 IUART::enable() noexcept
 {
-	UARTEnable(_baseAddress);
+	HWREG(_baseAddress + UART_O_CTL) |= (UART_CTL_UARTEN);
 }
 
 inline void
 IUART::disable() noexcept
 {
-	UARTDisable(_baseAddress);
+	HWREG(_baseAddress + UART_O_CTL) &= (~UART_CTL_UARTEN);
 }
 
 } // namespace uart
