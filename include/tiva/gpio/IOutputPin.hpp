@@ -1,11 +1,9 @@
 #pragma once
 
+#include "tiva/gpio/IPin.hpp"
+
 #include <cstdint>
-
-#include "tiva/gpio/pin.hpp"
-
 #include "driverlib/gpio.h"
-#include "driverlib/rom.h"
 
 namespace tiva {
 namespace gpio {
@@ -36,26 +34,6 @@ IOutputPin::IOutputPin(std::uint32_t baseAddress, std::uint8_t pinMask) noexcept
 	setDirection(Direction::Out);
 	configurePad(PadStrength::_2milliamper, PadMode::PushPull);
 }
-
-template<size_t PinNumber, typename PortType>
-class OutputPin
-	:	public PortType::template Pin<PinNumber, OutputFunction>,
-		public IOutputPin
-{
-public:
-	using PinType = typename PortType::template Pin<PinNumber, OutputFunction>;
-
-	explicit OutputPin(PortType& port) noexcept;
-
-	~OutputPin() noexcept = default;
-};
-
-template<size_t PinNumber, typename PortType>
-inline
-OutputPin<PinNumber, PortType>::OutputPin(PortType& port) noexcept
-	:	PinType::Pin(port),
-		IOutputPin(PortType::BaseAddress, PinType::PinMask)
-{}
 
 } // namespace gpio
 } // namespace tiva

@@ -1,33 +1,10 @@
 #pragma once
 
-#include "tiva/gpio/pin.hpp"
-#include "tiva/gpio/i-pin.hpp"
-
-#include <cstdint>
-#include "driverlib/gpio.h"
-#include "driverlib/rom.h"
+#include "tiva/gpio/Pin.hpp"
+#include "tiva/gpio/IInputPin.hpp"
 
 namespace tiva {
 namespace gpio {
-
-class IInputPin
-	:	public IPin
-{
-public:
-
-protected:
-	IInputPin(std::uint32_t baseAddress, std::uint8_t pinMask) noexcept;
-
-	~IInputPin() noexcept = default;
-};
-
-inline
-IInputPin::IInputPin(std::uint32_t baseAddress, std::uint8_t pinMask) noexcept
-	:	IPin(baseAddress, pinMask)
-{
-	setDirection(Direction::In);
-	configurePad(PadStrength::_2milliamper, PadMode::PushPull);
-}
 
 template<std::size_t PinNumber, typename PortType>
 class InputPin
