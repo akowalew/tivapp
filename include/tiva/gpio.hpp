@@ -1,5 +1,7 @@
 #pragma once
 
+#define TIVA_GPIO_USED
+
 #include "tiva/gpio/Port.hpp"
 #include "tiva/gpio/Pin.hpp"
 #include "tiva/gpio/InputPin.hpp"
