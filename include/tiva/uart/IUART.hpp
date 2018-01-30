@@ -26,6 +26,32 @@ public:
 
 	void disable() noexcept;
 
+	bool isEnabled() noexcept;
+
+	void enableTx() noexcept;
+
+	void disableTx() noexcept;
+
+	bool isTxEnabled() noexcept;
+
+	void enableRx() noexcept;
+
+	void disableRx() noexcept;
+
+	bool isRxEnabled() noexcept;
+
+	void enableInterrupts() noexcept;
+
+	void disableInterrupts() noexcept;
+
+	void maskInterrupts() noexcept;
+
+	void unmaskInterrupts() noexcept;
+
+	void getInterruptsStatus() noexcept;
+
+	void clearInterruptsStatus() noexcept;
+
 protected:
 	IUART(std::uint32_t peripheralId, std::uint32_t baseAddress) noexcept;
 
@@ -70,6 +96,48 @@ inline void
 IUART::disable() noexcept
 {
 	HWREG(_baseAddress + UART_O_CTL) &= (~UART_CTL_UARTEN);
+}
+
+inline bool
+IUART::isEnabled() noexcept
+{
+	return (HWREG(_baseAddress + UART_O_CTL) & UART_CTL_UARTEN);
+}
+
+inline void
+IUART::enableTx() noexcept
+{
+	HWREG(_baseAddress + UART_O_CTL) |= UART_CTL_TXE;
+}
+
+inline void
+IUART::disableTx() noexcept
+{
+	HWREG(_baseAddress + UART_O_CTL) &= (~UART_CTL_TXE);
+}
+
+inline bool
+IUART::isTxEnabled() noexcept
+{
+	return (HWREG(_baseAddress + UART_O_CTL) & (UART_CTL_TXE));
+}
+
+inline void
+IUART::enableRx() noexcept
+{
+	HWREG(_baseAddress + UART_O_CTL) |= UART_CTL_RXE;
+}
+
+inline void
+IUART::disableRx() noexcept
+{
+	HWREG(_baseAddress + UART_O_CTL) &= (~UART_CTL_RXE);
+}
+
+inline bool
+IUART::isRxEnabled() noexcept
+{
+	return (HWREG(_baseAddress + UART_O_CTL) & (UART_CTL_RXE));
 }
 
 } // namespace uart
