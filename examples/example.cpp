@@ -1,10 +1,3 @@
-// #include "tiva/tiva.hpp"
-// #include "tiva/chip/tm4c123gh6pm.hpp"
-
-// using namespace tiva::gpio;
-// using namespace tiva::uart;
-
-#include <tuple>
 #include <type_traits>
 #include <cstdint>
 #include <cassert>
@@ -12,6 +5,8 @@
 #include "inc/hw_types.h"
 #include "inc/hw_uart.h"
 #include "driverlib/uart.h"
+
+#include "tiva/util.hpp"
 
 using CharType = unsigned char;
 
@@ -56,6 +51,33 @@ enum class RxFIFOLevel
 	_7_8 = UART_IFLS_RX7_8,
 };
 
+struct ClearToSendIRQ : public tiva::util::bits::_1 {};
+struct RxIRQ : public tiva::util::bits::_4 {};
+struct TxIRQ : public tiva::util::bits::_5 {};
+struct RxTimeoutIRQ : public tiva::util::bits::_6 {};
+struct FramingErrorIRQ : public tiva::util::bits::_7 {};
+struct ParityErrorIRQ : public tiva::util::bits::_8 {};
+struct BrakErrorIRQ : public tiva::util::bits::_9 {};
+struct OverrunErrorIRQ : public tiva::util::bits::_10 {};
+struct NineBitModeIRQ : public tiva::util::bits::_12 {};
+
+using IRQBitSet =
+    tiva::util::BitSet<
+        ClearToSendIRQ,
+        RxIRQ,
+        TxIRQ,
+        RxTimeoutIRQ,
+        FramingErrorIRQ,
+        ParityErrorIRQ,
+        BrakErrorIRQ,
+        OverrunErrorIRQ,
+        NineBitModeIRQ
+    >;
+
+struct IRQs : public IRQBitSet {};
+struct RawIRQsStatus : public IRQBitSet {};
+struct MaskedIRQsStatus : public IRQBitSet {};
+
 class UART
 {
 public:
@@ -63,12 +85,14 @@ public:
 
     void disable();
     void disableFIFOs();
+    template<typename... TIRQs> void disableIRQs();
     void disableLoopBack();
     void disableNow();
     void disableRx();
     void disableTx();
     void enable();
     void enableFIFOs();
+    template<typename... TIRQs> void enableIRQs();
     void enableLoopBack();
     void enableRx();
     void enableTx();
@@ -76,6 +100,8 @@ public:
     RxData getRxData();
     RxData getRxDataNow();
     std::pair<RxFIFOLevel, TxFIFOLevel> getFIFOsLevels() const;
+    MaskedIRQsStatus getMaskedIRQsStatus() const;
+    RawIRQsStatus getRawIRQsStatus() const;
     RxFIFOLevel getRxFIFOLevel() const;
     TxFIFOLevel getTxFIFOLevel() const;
     bool isEnabled() const;
